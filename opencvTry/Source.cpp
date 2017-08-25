@@ -14,7 +14,9 @@ int cont_av_color(int x, int y)
 {
 	//mask - one line we ar working with
 
-
+	Mat elem = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
+	Mat dilated;
+	dilate(mask, dilated, elem);
 
 
 	return 1;
@@ -127,9 +129,7 @@ int main(int argc, char** argv) {
 
 	waitKey(0);
 
-	Mat elem = getStructuringElement(MORPH_RECT,	Size(3,3), Point(-1, -1));
-	Mat dilated;
-	dilate(inpaintMask, dilated, elem);
+	
 	 
 	
 
