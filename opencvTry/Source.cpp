@@ -10,13 +10,124 @@ using namespace std;
 Mat src, mask;
 vector<Vec4i> lines;
 
+
+
+
 int cont_av_color(int x, int y) 
 {
-	//mask - one line we ar working with
+	//mask - one line we are working with
+	Mat init = src = imread("1.jpg", IMREAD_COLOR);
 
-	Mat elem = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
+	Mat elem = getStructuringElement(MORPH_RECT, Size(1, 1), Point(-1, -1));
 	Mat dilated;
 	dilate(mask, dilated, elem);
+
+	//storing two massives of colors
+	Point3i m1 (0, 0, 0), m2 (0, 0, 0);
+	int m1Count = 0, m2Count = 0;
+	//uchar u;
+	int kernel = 3;
+
+	bool line = false, change = false, first_array = true; 
+
+	//int value = (int)dilated.at<uchar>(553, 458);
+
+
+	for (int j = y - kernel; j <= y + kernel; j++)
+	{
+		if (j % 2 == 0)
+		{
+			for (int i = x - kernel; i <= x + kernel; i++)
+			{
+				
+				if (dilated.at<uchar>(i, j) == 0 && line && !change)
+				{
+					if (first_array)
+						first_array = false;
+					else 
+						first_array = true;
+				}
+				
+				change = false;
+				
+				//int value = (int)dilated.at<uchar>(j, i);
+
+
+
+				if ((int) dilated.at<uchar>(j, i) == 0)
+					line = false;
+				else line = true;
+
+				if (!line)
+				{
+					if (first_array)
+					{
+						m1.x += (int) src.at<Vec3b>(Point(i, j))[0];
+						m1.y += (int) src.at<Vec3b>(Point(i, j))[1];
+						m1.z += (int) src.at<Vec3b>(Point(i, j))[2];
+						m1Count++;
+					}
+					else
+					{
+						m2.x += (int) src.at<Vec3b>(Point(i, j))[0];
+						m2.y += (int) src.at<Vec3b>(Point(i, j))[1];
+						m2.z += (int) src.at<Vec3b>(Point(i, j))[2];
+						m2Count++;
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int i = x + kernel; i >= x - kernel; i--)
+			{
+				if (dilated.at<uchar>(j, i) == 0 && line && !change)
+				{
+					if (first_array)
+						first_array = false;
+					else
+						first_array = true;
+				}
+
+				change = false;
+
+				if (dilated.at<uchar>(j, i) == 0)
+					line = false;
+				else line = true;
+
+				if (!line)
+				{
+					if (first_array)
+					{
+						m1.x += (int)src.at<Vec3b>(Point(i, j))[0];
+						m1.y += (int)src.at<Vec3b>(Point(i, j))[1];
+						m1.z += (int)src.at<Vec3b>(Point(i, j))[2];
+						m1Count++;
+					}
+					else
+					{
+						m2.x += (int)src.at<Vec3b>(Point(i, j))[0];
+						m2.y += (int)src.at<Vec3b>(Point(i, j))[1];
+						m2.z += (int)src.at<Vec3b>(Point(i, j))[2];
+						m2Count++;
+					}
+				}
+
+
+
+			}
+		}
+		change = true;
+	}
+
+	m1.x /= m1Count;
+	m1.y /= m1Count;
+	m1.z /= m1Count;
+
+	m2.x /= m2Count;
+	m2.y /= m2Count;
+	m2.z /= m2Count;
+
 
 
 	return 1;
@@ -56,7 +167,7 @@ int backgr_check(int num)
 
 int main(int argc, char** argv) {
 	
-	Mat src;
+	
 	src = imread("1.jpg", IMREAD_COLOR);
 	if (src.empty())
 	{
@@ -67,7 +178,7 @@ int main(int argc, char** argv) {
 	namedWindow("Initial photo", WINDOW_KEEPRATIO);
 	imshow("Initial photo", src);
 	waitKey(0);
-
+	
 	Mat src_closed, result_gray, binary, binary1;
 	Mat element = getStructuringElement(MORPH_RECT, Size(3, 3), Point(1, 1));
 	//morphologyEx(src, src_closed, MORPH_CLOSE, element);
